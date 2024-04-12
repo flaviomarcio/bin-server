@@ -8,18 +8,34 @@ export BIN_SRV_DOCKER_
 
 function dckInspectBackup()
 {
+  echM "Docker inspect backup"
   local __services=($(docker service ls --quiet))
   local __date=$(date -u +"%Y-%m-%dT%H:%M:%SZ" | sed 's/\-/\./g' | sed 's/:/\./g')
-  local __dir_inpect_backup=${BIN_SRV_DOCKER_BACKUP}/inspect/${__date}
-  mkdir -p ${__dir_inpect_backup}
+  local __dir_inpect_backup=${BIN_SRV_DOCKER_BACKUP}/inspect
+  local __dir_inpect_backup_final=${__dir_inpect_backup}/${__date}
   local __service_id=
   for __service_id in "${__services[@]}"
   do
     local __server_name="$(docker service inspect ${__service_id} | jq '.[].Spec.Name' | sed 's/\"//g')"
-    local __final_file="${__dir_inpect_backup}""/${__server_name}.json"
-    docker service inspect ${__service_id} | jq>${__final_file}
-    echo "${__final_file}"
-    #$(docker service inspect ${__service_id} | jq)>${__final_file}
+    echB "  - ${__server_name}:"
+    echC "    - inspect: ${COLOR_YELLOW}"
+   
+    local __file_src="${__dir_inpect_backup}/${__server_name}.json"
+    local __file_src_env="${__dir_inpect_backup}/${__server_name}-env.json"    
+    local __file_final="${__dir_inpect_backup_final}/${__server_name}.json"
+    local __file_final_env="${__dir_inpect_backup_final}/${__server_name}-env.json"
+
+    echC "      - full: ${COLOR_YELLOW}${__file_src}"
+    echC "      - envs: ${COLOR_YELLOW}${__file_src_env}"
+    docker service inspect ${__service_id} | jq > ${__file_src}
+    cat ${__file_src} | jq '.[].Spec.TaskTemplate.ContainerSpec.Env' > ${__file_src_env}
+
+    mkdir -p ${__dir_inpect_backup_final}
+    cat ${__file_src}>${__file_final}
+    cat ${__file_src_env}>${__file_final_env}
+    echB "    - history: ${COLOR_YELLOW}"
+    echC "      - full: ${COLOR_YELLOW}${__file_final}"
+    echC "      - envs: ${COLOR_YELLOW}${__file_final_env}"
   done
 
 }
