@@ -1,0 +1,91 @@
+#!/bin/bash
+
+. ${BIN_SRV_LIB_PATH}/envs
+. ${BIN_SRV_LIB_PATH}/srv-lib-string.sh
+. ${BIN_SRV_LIB_PATH}/srv-storage.sh
+
+export BIN_SRV_DOCKER_
+
+function dckInspectBackup()
+{
+  local __services=($(docker service ls --quiet))
+  local __date=$(date -u +"%Y-%m-%dT%H:%M:%SZ" | sed 's/\-/\./g' | sed 's/:/\./g')
+  local __dir_inpect_backup=${BIN_SRV_DOCKER_BACKUP}/inspect/${__date}
+  mkdir -p ${__dir_inpect_backup}
+  local __service_id=
+  for __service_id in "${__services[@]}"
+  do
+    local __server_name="$(docker service inspect ${__service_id} | jq '.[].Spec.Name' | sed 's/\"//g')"
+    local __final_file="${__dir_inpect_backup}""/${__server_name}.json"
+    docker service inspect ${__service_id} | jq>${__final_file}
+    echo "${__final_file}"
+    #$(docker service inspect ${__service_id} | jq)>${__final_file}
+  done
+
+}
+
+
+function mainMenuExec()
+{
+  local __action=${1}
+  if [[ ${__action} == "--dck-inspect-backup" ]]; then
+    dckInspectBackup
+  fi
+}
+
+function mainMenu()
+{
+  echM $'\n'"Server utils"$'\n'
+  PS3=$'\n'"Selecione uma opção: "
+  
+  local __options=(DCK-Inspect-Backup)
+  local __opt=
+  select __opt in "${__options[@]}"
+  do
+    echM ""
+    echM "Starting ${__opt}"
+    case ${__opt} in
+        "DCK-Inspect-Backup")
+          dckInspectBackup
+          return 1
+            ;;
+        "quit")
+          exit 0
+            ;;
+        *) echo "invalid option ${__opt}";
+    esac
+  done
+  return 1
+}
+
+function mainInit()
+{
+  unset __func_return
+  storageMaker
+  if ! [ "$?" -eq 1 ]; then
+    echR "Failt on calling storageMaker: ${__func_return}"
+    return 0
+  fi
+  return 1
+}
+
+
+function mainRunner()
+{
+  while :
+  do
+    mainInit
+    if ! [ "$?" -eq 1 ]; then
+      echR "Failt on calling storageMaker: ${__func_return}"
+      exit 0
+    fi
+    clearTerm
+    osInformationPrint
+    mainMenu
+    echG ""
+    echG "[ENTER para continuar]"
+    read
+  done
+}
+
+mainMenu

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ ${BIN_SRV_LIB_PATH} == "" ]]; then
+    export BIN_SRV_LIB_PATH=${PWD}
+fi
+
+
+#Bin for servers
+export PATH=${PATH}:${PWD}
