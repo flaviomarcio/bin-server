@@ -1,6 +1,8 @@
 #!/bin/bash
 
 cd ${HOME}/pipelines-shell-microservices
+echo "Updating"
+git pull -q
 ./run
 
 exit 0
