@@ -1,0 +1,3 @@
+#!/bin/bash
+
+go-git-dir ${HOME}/pipelines-shell-microservices

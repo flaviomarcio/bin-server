@@ -1,0 +1,7 @@
+#!/bin/bash
+
+clear
+echo "cd ${1}"
+cd ${1}
+echo "git pull origin $(git branch --show-current) -q"
+git pull origin $(git branch --show-current) -q
