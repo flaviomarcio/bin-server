@@ -1,5 +1,3 @@
 #!/bin/bash
 
 go-git-dir ${HOME}/java-littlecode-sdk
-alias gomcs="cd ${HOME}/pipelines-shell-microservices"
-alias goinf="cd ${HOME}/pipelines-infraestrutura-shell"

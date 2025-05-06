@@ -7,3 +7,5 @@ fi
 
 #Bin for servers
 export PATH=${PATH}:${PWD}
+
+echo ${PATH}
